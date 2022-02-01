@@ -18,17 +18,14 @@ error_handler = logging.FileHandler(str(os.path.basename(path))+".log")
 error_handler.setLevel(logging.ERROR)
 logger.addHandler(error_handler)
 
-fieldnames = ["FileName",] + list(ExifTags.TAGS.values())
+fieldnames = ["FileName", "Width", "Height"] + list(ExifTags.TAGS.values())
 
-# tags will be omitted
-omission = []
+# tags to be omitted
+omission = ["MakerNote", "UserComment"]
 for tag in omission:
     fieldnames.remove(tag)
 
 list_dir = os.listdir(path)
-
-with open("tmp.txt", "w+") as f:
-    f.write(str(list_dir))
 
 f = open(os.path.basename(path)+".csv", "w+", encoding='utf-8-sig')
 reader = csv.DictReader(f)
@@ -52,6 +49,9 @@ for filename in list_dir:
                 if tag in exif_data:
                     del exif_data[tag]
             
+            exif_data["Width"] = img.size[0]
+            exif_data["Height"] = img.size[1]
+
             writer.writerow(exif_data)
         except Exception as e:
             logger.error(f"{filename}: {type(e)} {e}")
